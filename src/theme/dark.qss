@@ -1,0 +1,78 @@
+/* ===== HungKali Security Center Theme ===== */
+
+QMainWindow {
+    background-color: #10151c;
+}
+
+QWidget {
+    background-color: #10151c;
+    color: #d8dee9;
+    font-size: 11pt;
+}
+
+/* Sidebar */
+
+QPushButton {
+    background-color: #1b2430;
+    border: 1px solid #2e3440;
+    border-radius: 8px;
+    padding: 10px;
+    text-align: left;
+    color: #d8dee9;
+}
+
+QPushButton:hover {
+    background-color: #263445;
+    border: 1px solid #00ff99;
+}
+
+QPushButton:pressed {
+    background-color: #00aa66;
+}
+
+/* Dashboard Cards */
+
+QFrame#InfoCard {
+    background-color: #1b2430;
+    border: 1px solid #2e3440;
+    border-radius: 12px;
+    padding: 15px;
+}
+
+QLabel#CardTitle {
+    color: #8fbcbb;
+    font-size: 12pt;
+}
+
+QLabel#CardValue {
+    color: #00ff99;
+    font-size: 24pt;
+    font-weight: bold;
+}
+
+/* Progress */
+
+QProgressBar {
+    border: 1px solid #333;
+    border-radius: 6px;
+    text-align: center;
+    height: 18px;
+}
+
+QProgressBar::chunk {
+    background-color: #00ff99;
+}
+
+/* Table */
+
+QTableWidget {
+    background-color: #1b2430;
+    gridline-color: #2e3440;
+}
+
+QHeaderView::section {
+    background-color: #263445;
+    color: white;
+    padding: 5px;
+    border: none;
+}

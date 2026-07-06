@@ -2,15 +2,15 @@ from PySide6.QtWidgets import (
     QWidget,
     QLabel,
     QVBoxLayout,
-    QProgressBar,
+    QGridLayout,
 )
 
-from PySide6.QtCore import QTimer
+from PySide6.QtCore import Qt, QTimer
+
+from src.widgets.info_card import InfoCard
 
 from src.monitor.system_monitor import SystemMonitor
-
 from src.services.suricata_service import SuricataService
-
 from src.services.fail2ban_service import Fail2BanService
 
 
@@ -19,53 +19,54 @@ class Dashboard(QWidget):
     def __init__(self):
         super().__init__()
 
-        layout = QVBoxLayout()
-        self.setLayout(layout)
+        main_layout = QVBoxLayout(self)
 
+        # ===== Title =====
         title = QLabel("HungKali Security Center")
-
+        title.setAlignment(Qt.AlignCenter)
         title.setStyleSheet("""
-            font-size:26px;
+            font-size:28px;
             font-weight:bold;
             color:#00ff99;
         """)
 
-        layout.addWidget(title)
+        main_layout.addWidget(title)
 
-        # CPU
-        self.cpu_label = QLabel("CPU")
-        self.cpu_bar = QProgressBar()
-        self.cpu_bar.setRange(0, 100)
+        # ===== Cards =====
+        grid = QGridLayout()
 
-        # RAM
-        self.ram_label = QLabel("RAM")
-        self.ram_bar = QProgressBar()
-        self.ram_bar.setRange(0, 100)
+        self.cpu_card = InfoCard("CPU")
+        self.ram_card = InfoCard("RAM")
+        self.disk_card = InfoCard("DISK")
 
-        # Disk
-        self.disk_label = QLabel("Disk")
-        self.disk_bar = QProgressBar()
-        self.disk_bar.setRange(0, 100)
+        self.threat_card = InfoCard("Threat Today", "0")
+        self.critical_card = InfoCard("Critical", "0")
+        self.service_card = InfoCard("Services", "0")
 
-        # Status
-        self.suricata = QLabel("🟢 Suricata : Running")
-        self.fail2ban = QLabel("🟢 Fail2Ban : Waiting")
+        grid.addWidget(self.cpu_card, 0, 0)
+        grid.addWidget(self.ram_card, 0, 1)
+        grid.addWidget(self.disk_card, 0, 2)
 
-        layout.addWidget(self.cpu_label)
-        layout.addWidget(self.cpu_bar)
+        grid.addWidget(self.threat_card, 1, 0)
+        grid.addWidget(self.critical_card, 1, 1)
+        grid.addWidget(self.service_card, 1, 2)
 
-        layout.addWidget(self.ram_label)
-        layout.addWidget(self.ram_bar)
+        main_layout.addLayout(grid)
 
-        layout.addWidget(self.disk_label)
-        layout.addWidget(self.disk_bar)
+        # ===== Services =====
+        self.suricata = QLabel()
+        self.fail2ban = QLabel()
 
-        layout.addWidget(self.suricata)
-        layout.addWidget(self.fail2ban)
+        self.suricata.setStyleSheet("font-size:16px;")
+        self.fail2ban.setStyleSheet("font-size:16px;")
 
-        layout.addStretch()
+        main_layout.addSpacing(15)
+        main_layout.addWidget(self.suricata)
+        main_layout.addWidget(self.fail2ban)
 
-        # Timer cập nhật mỗi giây
+        main_layout.addStretch()
+
+        # ===== Timer =====
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_stats)
         self.timer.start(1000)
@@ -73,27 +74,31 @@ class Dashboard(QWidget):
         self.update_stats()
 
     def update_stats(self):
+
         cpu = SystemMonitor.cpu()
         ram = SystemMonitor.ram()
         disk = SystemMonitor.disk()
 
-        self.cpu_label.setText(f"CPU : {cpu:.1f}%")
-        self.cpu_bar.setValue(int(cpu))
+        self.cpu_card.setValue(f"{cpu:.1f}%")
+        self.ram_card.setValue(f"{ram:.1f}%")
+        self.disk_card.setValue(f"{disk:.1f}%")
 
-        self.ram_label.setText(f"RAM : {ram:.1f}%")
-        self.ram_bar.setValue(int(ram))
+        running = 0
 
-        self.disk_label.setText(f"Disk : {disk:.1f}%")
-        self.disk_bar.setValue(int(disk))
-
-        # Kiểm tra Suricata
         if SuricataService.is_running():
             self.suricata.setText("🟢 Suricata : Running")
+            running += 1
         else:
             self.suricata.setText("🔴 Suricata : Stopped")
 
-        # Kiểm tra Fail2Ban
         if Fail2BanService.is_running():
             self.fail2ban.setText("🟢 Fail2Ban : Running")
+            running += 1
         else:
             self.fail2ban.setText("🔴 Fail2Ban : Stopped")
+
+        self.service_card.setValue(f"{running}/2")
+
+        # Tạm thời để 0, sau sẽ đọc từ eve.json
+        self.threat_card.setValue("0")
+        self.critical_card.setValue("0")

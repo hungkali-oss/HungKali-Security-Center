@@ -1,3 +1,4 @@
+from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (
     QWidget,
     QVBoxLayout,
@@ -7,16 +8,17 @@ from PySide6.QtWidgets import (
 
 class Sidebar(QWidget):
 
+    pageChanged = Signal(int)
+
     def __init__(self):
         super().__init__()
 
         self.setFixedWidth(220)
 
         layout = QVBoxLayout()
-
         self.setLayout(layout)
 
-        buttons = [
+        pages = [
             "Dashboard",
             "Security",
             "Network",
@@ -26,11 +28,14 @@ class Sidebar(QWidget):
             "Settings",
         ]
 
-        for name in buttons:
+        for index, name in enumerate(pages):
 
             btn = QPushButton(name)
-
             btn.setMinimumHeight(45)
+
+            btn.clicked.connect(
+                lambda checked=False, i=index: self.pageChanged.emit(i)
+            )
 
             layout.addWidget(btn)
 
